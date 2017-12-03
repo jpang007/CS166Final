@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * This class defines a simple embedded SQL utility class that is designed to
@@ -451,6 +452,32 @@ public class AirBooking{
 		}
 	}
 
+	public static String getBookingID() { // Creates random booking ID
+        String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+				String SALTNUMS = "1234567890";
+        StringBuilder salt = new StringBuilder();
+				StringBuilder salt2 = new StringBuilder();
+				StringBuilder salt3 = new StringBuilder();
+        Random rnd = new Random();
+        while (salt.length() < 5) { // length of the random string.
+            int index = (int) (rnd.nextFloat() * SALTCHARS.length());
+            salt.append(SALTCHARS.charAt(index));
+        }
+				while (salt2.length() < 4) { // length of the random string.
+            int index = (int) (rnd.nextFloat() * SALTNUMS.length());
+            salt2.append(SALTNUMS.charAt(index));
+        }
+				while (salt3.length() < 1) { // length of the random string.
+            int index = (int) (rnd.nextFloat() * SALTCHARS.length());
+            salt3.append(SALTCHARS.charAt(index));
+        }
+        String saltStr = salt.toString();
+				String saltStr2 = salt2.toString();
+				String saltStr3 = salt3.toString();
+				String masterString = saltStr + saltStr2 + saltStr3;
+        return masterString;
+    }
+
 	public static void BookFlight(AirBooking esql){//2
 		//Book Flight for an existing customer
 		try{
@@ -490,9 +517,8 @@ public class AirBooking{
 				input = in.readLine();
 				query += input + "';";
 				passNum = esql.executeQueryAndReturnResult(query);
-				if (flightNum.isEmpty()) {
+				if (passNum.isEmpty()) {
 					System.out.println("There is no matching Passport Number.");
-					System.out.println("Please enter a valid Passport Number.\n");
 					repeatFlag = 0;
 				}
 			} while (repeatFlag == 0);
@@ -523,14 +549,17 @@ public class AirBooking{
 					repeatFlag = 0;
 				}
 			} while(repeatFlag == 0);
-			input = inputMonth + "/" + inputDay + "/" + inputYear;
-			query += input + ", ";
+			String departureDate = inputMonth + "/" + inputDay + "/" + inputYear;
 
 			//Insert into bookings table
 			//Make sure pID, departure date and flight Num are all unique
 			query = "INSERT INTO Booking VALUES(";
-			query += flightNum + ", ";
-			query += passNum + ");";
+			String bookingID = getBookingID();
+			query += bookingID + ", ";
+			query += departureDate + ", ";
+			query += flightNum.get(0).get(0).replaceAll("\\s+","") + ", "; // accessing index in list of list
+			query += passNum.get(0).get(0) + ");";
+			System.out.println(query);
 
 			// esql.executeQuery(query);
 
@@ -541,7 +570,7 @@ public class AirBooking{
 
 	public static void TakeCustomerReview(AirBooking esql){//3
 		//Insert customer review into the ratings table
-		
+
 	}
 
 	public static void InsertOrUpdateRouteForAirline(AirBooking esql){//4 EXTRA CREDIT
@@ -550,7 +579,45 @@ public class AirBooking{
 
 	public static void ListAvailableFlightsBetweenOriginAndDestination(AirBooking esql) throws Exception{//5
 		//List all flights between origin and distination (i.e. flightNum,origin,destination,plane,duration)
+		String input = "";
+		String query = "SELECT flightNum, plane, duration FROM Flight WHERE origin = '";
+		Integer repeatFlag = 1;
+
+		System.out.print("Enter the origin for all flights you want to see: ");
+		do { //performs check to make sure user entered something
+			input = in.readLine();
+			repeatFlag = 1;
+			if (input == null || input.isEmpty()) {
+				System.out.println("Please enter a origin location\n");
+				repeatFlag = 0;
+			}
+			boolean allLetters = input.chars().allMatch(Character::isLetter);
+			if (allLetters == false) {
+				System.out.println("Please enter only characters\n");
+				repeatFlag = 0;
+			}
+		} while(repeatFlag == 0);
+		query += input + "', '";
+
+		System.out.print("Enter the destination for all flights you want to see: ");
+		do { //performs check to make sure user entered something
+			input = in.readLine();
+			repeatFlag = 1;
+			if (input == null || input.isEmpty()) {
+				System.out.println("Please enter a destination location\n");
+				repeatFlag = 0;
+			}
+			boolean allLetters = input.chars().allMatch(Character::isLetter);
+			if (allLetters == false) {
+				System.out.println("Please enter only characters\n");
+				repeatFlag = 0;
+			}
+		} while(repeatFlag == 0);
+		query += input + "';";
+
+		System.out.println(query);
 	}
+
 
 	public static void ListMostPopularDestinations(AirBooking esql){//6
 		//Print the k most popular destinations based on the number of flights offered to them (i.e. destination, choices)
