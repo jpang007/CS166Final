@@ -570,7 +570,125 @@ public class AirBooking{
 
 	public static void TakeCustomerReview(AirBooking esql){//3
 		//Insert customer review into the ratings table
+		try{
+			String query = "INSERT INTO Ratings VALUES(";
+			System.out.println("Enter rating ID: ");
+			String input = "";
+			String originInput = "";
+			String destInput = "";
+			List<List<String>> flightNum;
+			Integer repeatFlag = 1;
 
+			// Insert rID possible to change this to automatically assigned later
+			do { //performs check to make sure user entered something
+				input = in.readLine();
+				repeatFlag = 1;
+				String uniqueChecker = "SELECT * FROM Ratings WHERE rID = ";
+				uniqueChecker += input + " LIMIT 1;";
+				if (input == null || input.isEmpty()) {
+					System.out.println("Please enter a rating ID\n");
+					repeatFlag = 0;
+				}
+				// checks to make sure the number is unique
+				else if (esql.executeQuery(uniqueChecker) == 1) {
+					System.out.println("This ID already exists, try again\n");
+					repeatFlag = 0;
+				}
+				//TODO: implement functionality to insert into free ID spot
+			} while(repeatFlag == 0);
+			query += input + ", ";
+
+			System.out.println("Please enter your passenger ID: ");
+			// Insert pID
+			do { //performs check to make sure user entered something
+				input = in.readLine();
+				repeatFlag = 1;
+				String uniqueChecker = "SELECT * FROM Passenger WHERE pID = ";
+				uniqueChecker += input + " LIMIT 1;";
+				if (input == null || input.isEmpty()) {
+					System.out.println("Please enter a passenger ID\n");
+					repeatFlag = 0;
+				}
+				// checks to make sure the number is unique
+				else if (esql.executeQuery(uniqueChecker) == 0) {
+					System.out.println("This ID does not exist, try again\n");
+					repeatFlag = 0;
+				}
+				//TODO: implement functionality to insert into free ID spot
+			} while(repeatFlag == 0);
+			query += input + ", ";
+
+			//Insert Flight Number
+			//Either ask for flight number or ask for origin destination
+			System.out.println("Enter your flight number. If you only know the origin and destination, please type 'origin'.");
+			do {
+				input = in.readLine();
+				if (input.equals("origin")) {
+					do { // helps find the corresponding flight number
+						query = "SELECT flightNum FROM Flight WHERE origin = '";
+						repeatFlag = 1;
+						System.out.println("Where are you traveling from?");
+						originInput = in.readLine();
+						query += originInput + "' AND destination = '";
+						System.out.println("Where would you like to travel to?");
+						destInput = in.readLine();
+						query += destInput + "';";
+						flightNum = esql.executeQueryAndReturnResult(query);
+						if (flightNum.isEmpty()) {
+							System.out.println("There is no flight from " +
+							originInput + " to " + destInput);
+							System.out.println("Please enter a valid flight path.\n");
+							repeatFlag = 0;
+						}
+					} while (repeatFlag == 0);
+					System.out.println("The corresponding flightNum is" + flightNum);
+					break;
+				}
+				String uniqueChecker = "SELECT * FROM Flight WHERE flightNum = '";
+				uniqueChecker += input + "' LIMIT 1;";
+				if (esql.executeQuery(uniqueChecker) == 0) {
+					System.out.println("This flightNum does not exist, try again\n");
+					repeatFlag = 0;
+				}
+			} while (repeatFlag == 0);
+			query += input + ", ";
+
+			System.out.println("What would you rate this flight? (1 - 5 with a 1 being the lowest): ");
+			do { //performs check to make sure user entered something
+				input = in.readLine();
+				repeatFlag = 1;
+				if (input == null || input.isEmpty()) {
+					System.out.println("Please enter a rating\n");
+					repeatFlag = 0;
+				}
+				if (Integer.parseInt(input) < 1 || Integer.parseInt(input) > 5) {
+					System.out.println("That is not a valid rating. Please try again.");
+					repeatFlag = 0;
+				}
+			} while(repeatFlag == 0);
+			query += input + ", ";
+
+			System.out.println("Would you like to leave a comment? Y/N");
+			do {
+				input = in.readLine();
+				repeatFlag = 1;
+				if (input.equals("Y")) { // leaving a comment
+					System.out.println("test");
+				}
+				else if (input.equals("N")) { // end query
+					break;
+				}
+				else {
+					System.out.println("Please enter Y or N.");
+					repeatFlag = 0;
+				}
+			} while (repeatFlag == 0);
+
+			System.out.println(query);
+
+		}catch(Exception e){
+			 System.err.println (e.getMessage());
+		}
 	}
 
 	public static void InsertOrUpdateRouteForAirline(AirBooking esql){//4 EXTRA CREDIT
@@ -597,7 +715,7 @@ public class AirBooking{
 				repeatFlag = 0;
 			}
 		} while(repeatFlag == 0);
-		query += input + "', '";
+		query += input + "' AND destination = '";
 
 		System.out.print("Enter the destination for all flights you want to see: ");
 		do { //performs check to make sure user entered something
@@ -615,7 +733,7 @@ public class AirBooking{
 		} while(repeatFlag == 0);
 		query += input + "';";
 
-		System.out.println(query);
+		esql.executeQueryAndPrintResult(query);
 	}
 
 
