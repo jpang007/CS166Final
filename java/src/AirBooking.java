@@ -302,51 +302,36 @@ public class AirBooking{
 		//Add a new passenger to the database
 		try{
 			String query = "INSERT INTO Passenger VALUES(";
-			System.out.print("Enter ID: ");
 			String input = "";
 			Integer repeatFlag = 1;
+			List<List<String>> maxID;
 
-			// Insert pID
-			do { //performs check to make sure user entered something
-				input = in.readLine();
-				repeatFlag = 1;
-				String uniqueChecker = "SELECT * FROM Passenger WHERE pID = ";
-				uniqueChecker += input + " LIMIT 1;";
-				if (input == null || input.isEmpty()) {
-					System.out.println("Please enter an ID\n");
-					repeatFlag = 0;
-				}
-				// checks to make sure the number is unique
-				else if (esql.executeQuery(uniqueChecker) == 1) {
-					System.out.println("This ID already exists, try again\n");
-					repeatFlag = 0;
-				}
-				//TODO: implement functionality to insert into free ID spot
-			} while(repeatFlag == 0);
-			query += input + ", ";
+			String testquery = "SELECT MAX(pID) from Passenger";
+			maxID = esql.executeQueryAndReturnResult(testquery);
+			query += (Integer.parseInt(maxID.get(0).get(0)) + 1) + ", ";
 
 			// Insert Passport
-			System.out.print("Enter Passport Number: "); // make sure it's unique
+			System.out.print("Enter your Passport Number: "); // make sure it's unique
 			do { //performs check to make sure user entered something
 				input = in.readLine();
 				repeatFlag = 1;
 				if (input == null || input.isEmpty()) {
-					System.out.println("Please enter an Passport Number\n");
+					System.out.println("Please enter an Passport Number");
 					repeatFlag = 0;
 				}
 				else if (input.length() != 10) {
-					System.out.println("Please enter a 10 digit Passport Number\n");
+					System.out.println("Please enter a 10 digit Passport Number");
 					repeatFlag = 0;
 				}
 				boolean allLetters = input.chars().allMatch(Character::isLetter);
 				if (allLetters == false) {
-					System.out.println("Please enter only characters\n");
+					System.out.println("Please enter only characters");
 					repeatFlag = 0;
 				}
 				String uniqueChecker = "SELECT * FROM Passenger WHERE passNum = '";
 				uniqueChecker += input + "' LIMIT 1;";
 				if (esql.executeQuery(uniqueChecker) == 1) {
-					System.out.println("This Passport Number already exists\n");
+					System.out.println("This Passport Number already exists");
 					repeatFlag = 0;
 				}
 			} while(repeatFlag == 0);
@@ -401,22 +386,22 @@ public class AirBooking{
 			Integer inputYear = 0;
 			do { //performs check to make sure user entered something
 				repeatFlag = 1;
-				System.out.print("Enter birth month in numbers (ex. 1 is January): ");
+				System.out.println("Enter birth month in numbers (ex. 1 is January): ");
 				inputMonth = Integer.parseInt(in.readLine());
 				if (inputMonth < 1 || inputMonth > 12) {
-					System.out.print("Please enter a valid month ");
+					System.out.println("Please enter a valid month ");
 					repeatFlag = 0;
 				}
-				System.out.print("Enter birth day in numbers (ex. 15): ");
+				System.out.println("Enter birth day in numbers (ex. 15): ");
 				inputDay = Integer.parseInt(in.readLine());
-				if (inputDay < 1 || inputDay > 31) {
-					System.out.print("Please enter a valid day ");
+				if (inputDay < 1 | inputDay > 31) {
+					System.out.println("Please enter a valid day ");
 					repeatFlag = 0;
 				}
-				System.out.print("Enter birth year greater than 1900: ");
+				System.out.println("Enter birth year greater than 1900: ");
 				inputYear = Integer.parseInt(in.readLine());
 				if (inputYear < 1900) {
-					System.out.print("Please enter a valid year ");
+					System.out.println("Please enter a valid year ");
 					repeatFlag = 0;
 				}
 			} while(repeatFlag == 0);
@@ -424,7 +409,7 @@ public class AirBooking{
 			query += input + ", ";
 
 			//Insert Country
-			System.out.print("Enter Country: ");
+			System.out.println("Enter Country: ");
 			do { //performs check to make sure user entered something
 				input = in.readLine();
 				repeatFlag = 1;
@@ -436,7 +421,7 @@ public class AirBooking{
 					System.out.println("Please enter a Country under 24 characters\n");
 					repeatFlag = 0;
 				}
-				boolean allLetters = input.chars().allMatch(Character::isLetter);
+				boolean allLetters = input.replaceAll("\\s+","").chars().allMatch(Character::isLetter);
 				if (allLetters == false) {
 					System.out.println("Please enter only characters\n");
 					repeatFlag = 0;
@@ -482,7 +467,6 @@ public class AirBooking{
 		//Book Flight for an existing customer
 		try{
 			//Select the Flight Number
-			//TODO: add functionality to check if valid cities
 			//TODO: do a select limit 1 and see if it exists
 			Integer repeatFlag = 1;
 			String originInput = "";
@@ -491,6 +475,7 @@ public class AirBooking{
 			List<List<String>> flightNum;
 			List<List<String>> passNum;
 			String query = "";
+			String multipleCityQuery = "";
 			do {
 				query = "SELECT flightNum FROM Flight WHERE origin = '";
 				repeatFlag = 1;
@@ -504,8 +489,31 @@ public class AirBooking{
 				if (flightNum.isEmpty()) {
 					System.out.println("There is no flight from " +
 					originInput + " to " + destInput);
-					System.out.println("Please enter a valid flight path.\n");
+					System.out.println("Please enter a valid flight path.");
 					repeatFlag = 0;
+				}
+				if (flightNum.size() > 1) { // in case there are multiple flights
+					System.out.println("There seems to be multiple flights from these two cities.");
+					System.out.println("Please choose which one would you prefer to take by Flight Number.");
+					multipleCityQuery = "SELECT * FROM Flight WHERE origin = '" + originInput
+					+ "' AND destination = '" + destInput + "';";
+					do {
+						repeatFlag = 1;
+						esql.executeQueryAndPrintResult(multipleCityQuery);
+						input = in.readLine();
+						String uniqueChecker = "SELECT * FROM Flight WHERE flightNum = '";
+						uniqueChecker += input + "' AND Origin = '" + originInput + "' AND destination = '" + destInput + "' LIMIT 1;";
+						if (esql.executeQuery(uniqueChecker) == 0) {
+							System.out.println("There is no existing Flight Number from those two cities.");
+							System.out.println("Try entering it again.");
+							repeatFlag = 0;
+						}
+				 } while (repeatFlag == 0);
+				 for (int i = 0; i < flightNum.size(); i++) {
+				 	flightNum.get(i).clear();
+				 }
+				 flightNum.get(0).add(input);
+				 break;
 				}
 			} while (repeatFlag == 0);
 
@@ -554,13 +562,27 @@ public class AirBooking{
 			//Insert into bookings table
 			//Make sure pID, departure date and flight Num are all unique
 			query = "INSERT INTO Booking VALUES(";
-			String bookingID = getBookingID();
+			// making sure this bookingID isn't used if the booking ID has been already
+			// created it'll silently loop until it finds one that hasn't been used
+			String bookingID = "";
+			do {
+				bookingID = getBookingID();
+				String uniqueChecker = "SELECT * FROM Booking WHERE bookRef = '";
+				uniqueChecker += input + "' LIMIT 1;";
+				if (esql.executeQuery(uniqueChecker) == 1) {
+					repeatFlag = 0;
+				}
+			} while(repeatFlag == 0);
 			query += bookingID + ", ";
 			query += departureDate + ", ";
 			query += flightNum.get(0).get(0).replaceAll("\\s+","") + ", "; // accessing index in list of list
 			query += passNum.get(0).get(0) + ");";
 			System.out.println(query);
 
+			System.out.println("You're all good to go! Your booking ID is: " + bookingID);
+			System.out.println("Your flight from " + originInput + " to " + destInput + " on " + departureDate + " has been booked.");
+
+			// all avaliable flights from origin to destination
 			// esql.executeQuery(query);
 
 		}catch(Exception e){
@@ -572,68 +594,52 @@ public class AirBooking{
 		//Insert customer review into the ratings table
 		try{
 			String query = "INSERT INTO Ratings VALUES(";
-			System.out.println("Enter rating ID: ");
 			String input = "";
 			String originInput = "";
 			String destInput = "";
 			List<List<String>> flightNum;
+			List<List<String>> passNum;
 			Integer repeatFlag = 1;
 
-			// Insert rID possible to change this to automatically assigned later
-			do { //performs check to make sure user entered something
-				input = in.readLine();
-				repeatFlag = 1;
-				String uniqueChecker = "SELECT * FROM Ratings WHERE rID = ";
-				uniqueChecker += input + " LIMIT 1;";
-				if (input == null || input.isEmpty()) {
-					System.out.println("Please enter a rating ID\n");
-					repeatFlag = 0;
-				}
-				// checks to make sure the number is unique
-				else if (esql.executeQuery(uniqueChecker) == 1) {
-					System.out.println("This ID already exists, try again\n");
-					repeatFlag = 0;
-				}
-				//TODO: implement functionality to insert into free ID spot
-			} while(repeatFlag == 0);
-			query += input + ", ";
+			List<List<String>> maxID;
 
-			System.out.println("Please enter your passenger ID: ");
+			String testquery = "SELECT MAX(rID) from Ratings";
+			maxID = esql.executeQueryAndReturnResult(testquery);
+			query += (Integer.parseInt(maxID.get(0).get(0)) + 1) + ", ";
+
+			String passportString = "";
+			System.out.println("Please enter your Passport Number: ");
 			// Insert pID
-			do { //performs check to make sure user entered something
-				input = in.readLine();
+			do {
 				repeatFlag = 1;
-				String uniqueChecker = "SELECT * FROM Passenger WHERE pID = ";
-				uniqueChecker += input + " LIMIT 1;";
-				if (input == null || input.isEmpty()) {
-					System.out.println("Please enter a passenger ID\n");
+				passportString = "SELECT pID FROM Passenger WHERE passNum = '";
+				input = in.readLine();
+				passportString += input + "';";
+				passNum = esql.executeQueryAndReturnResult(passportString);
+				if (passNum.isEmpty()) {
+					System.out.println("There is no matching Passport Number.");
 					repeatFlag = 0;
 				}
-				// checks to make sure the number is unique
-				else if (esql.executeQuery(uniqueChecker) == 0) {
-					System.out.println("This ID does not exist, try again\n");
-					repeatFlag = 0;
-				}
-				//TODO: implement functionality to insert into free ID spot
-			} while(repeatFlag == 0);
+			} while (repeatFlag == 0);
 			query += input + ", ";
 
 			//Insert Flight Number
 			//Either ask for flight number or ask for origin destination
+			String flightFinder = "";
 			System.out.println("Enter your flight number. If you only know the origin and destination, please type 'origin'.");
 			do {
 				input = in.readLine();
 				if (input.equals("origin")) {
 					do { // helps find the corresponding flight number
-						query = "SELECT flightNum FROM Flight WHERE origin = '";
+						flightFinder = "SELECT flightNum FROM Flight WHERE origin = '";
 						repeatFlag = 1;
 						System.out.println("Where are you traveling from?");
 						originInput = in.readLine();
-						query += originInput + "' AND destination = '";
+						flightFinder += originInput + "' AND destination = '";
 						System.out.println("Where would you like to travel to?");
 						destInput = in.readLine();
-						query += destInput + "';";
-						flightNum = esql.executeQueryAndReturnResult(query);
+						flightFinder += destInput + "'";
+						flightNum = esql.executeQueryAndReturnResult(flightFinder);
 						if (flightNum.isEmpty()) {
 							System.out.println("There is no flight from " +
 							originInput + " to " + destInput);
@@ -641,7 +647,8 @@ public class AirBooking{
 							repeatFlag = 0;
 						}
 					} while (repeatFlag == 0);
-					System.out.println("The corresponding flightNum is" + flightNum.get(0).get(0));
+					System.out.println("The corresponding flightNum is: " + flightNum.get(0).get(0));
+					input = flightNum.get(0).get(0).replaceAll("\\s+","");
 					break;
 				}
 				String uniqueChecker = "SELECT * FROM Flight WHERE flightNum = '";
@@ -653,6 +660,7 @@ public class AirBooking{
 				}
 			} while (repeatFlag == 0);
 			query += input + ", ";
+
 
 			System.out.println("What would you rate this flight? (1 - 5 with a 1 being the lowest): ");
 			do { //performs check to make sure user entered something
@@ -667,7 +675,7 @@ public class AirBooking{
 					repeatFlag = 0;
 				}
 			} while(repeatFlag == 0);
-			query += input + ", ";
+			query += input;
 
 			System.out.println("Would you like to leave a comment? Y/N");
 			do {
@@ -681,7 +689,7 @@ public class AirBooking{
 							System.out.println("Your comment is too long. Please write under 240 characters");
 						}
 					} while (repeatFlag == 0);
-					query += input;
+					query += ", " + input + ")";
 				}
 				else if (input.equals("N")) { // end query
 					break;
