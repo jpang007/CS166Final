@@ -637,17 +637,18 @@ public class AirBooking{
 						if (flightNum.isEmpty()) {
 							System.out.println("There is no flight from " +
 							originInput + " to " + destInput);
-							System.out.println("Please enter a valid flight path.\n");
+							System.out.println("Please enter a valid flight path.");
 							repeatFlag = 0;
 						}
 					} while (repeatFlag == 0);
-					System.out.println("The corresponding flightNum is" + flightNum);
+					System.out.println("The corresponding flightNum is" + flightNum.get(0).get(0));
 					break;
 				}
 				String uniqueChecker = "SELECT * FROM Flight WHERE flightNum = '";
 				uniqueChecker += input + "' LIMIT 1;";
 				if (esql.executeQuery(uniqueChecker) == 0) {
-					System.out.println("This flightNum does not exist, try again\n");
+					System.out.println("This flightNum does not exist, try again");
+					System.out.println("Type origin if you want to search for your flightNum");
 					repeatFlag = 0;
 				}
 			} while (repeatFlag == 0);
@@ -658,7 +659,7 @@ public class AirBooking{
 				input = in.readLine();
 				repeatFlag = 1;
 				if (input == null || input.isEmpty()) {
-					System.out.println("Please enter a rating\n");
+					System.out.println("Please enter a rating");
 					repeatFlag = 0;
 				}
 				if (Integer.parseInt(input) < 1 || Integer.parseInt(input) > 5) {
@@ -673,7 +674,14 @@ public class AirBooking{
 				input = in.readLine();
 				repeatFlag = 1;
 				if (input.equals("Y")) { // leaving a comment
-					System.out.println("test");
+					System.out.println("Please leave your comment. (Maximum 240 characters)");
+					do {
+						input = in.readLine();
+						if (input.length() > 240) {
+							System.out.println("Your comment is too long. Please write under 240 characters");
+						}
+					} while (repeatFlag == 0);
+					query += input;
 				}
 				else if (input.equals("N")) { // end query
 					break;
@@ -736,9 +744,58 @@ public class AirBooking{
 		esql.executeQueryAndPrintResult(query);
 	}
 
-
 	public static void ListMostPopularDestinations(AirBooking esql){//6
 		//Print the k most popular destinations based on the number of flights offered to them (i.e. destination, choices)
+		try {
+			String input = "";
+			String input2 = "";
+			String query = "SELECT destination,COUNT(*) as count FROM Flight GROUP BY destination ORDER BY count DESC LIMIT ";
+			Integer repeatFlag = 1;
+			List<List<String>> popularDestinations;
+			List<List<String>> totalNumberOfFlights;
+			String totalFlights = "SELECT COUNT(*) FROM Flight GROUP BY destination";
+			totalNumberOfFlights = esql.executeQueryAndReturnResult(totalFlights);
+
+			System.out.println("How many popular destinations would you like to see?");
+			do { //performs check to make sure user entered something
+				input = in.readLine();
+				repeatFlag = 1;
+				if (Integer.parseInt(input) < 1) {
+					System.out.println("Can not have less than one popular destination");
+					repeatFlag = 0;
+				}
+				// Can add functionality to let user know there isn't that many flights
+				if (Integer.parseInt(input) > totalNumberOfFlights.size()) {
+					System.out.println("There are less destinations than the number you provided.");
+					System.out.println("Would you like to see all avaliable destinations? Y/N");
+					input2 = in.readLine();
+					if (input2.equals("Y")) {
+						System.out.println("Now outputting the total number of destinations: " + totalNumberOfFlights.size());
+						break;
+					}
+					else if (input2.equals("N")) {
+						System.out.println("Okay. Please try again.");
+						System.out.println("How many popular destinations would you like to see?");
+						repeatFlag = 0;
+					}
+					else {
+						System.out.println("Please enter Y or N.");
+						repeatFlag = 0;
+					}
+				}
+			} while(repeatFlag == 0);
+			query += input + ";";
+			popularDestinations = esql.executeQueryAndReturnResult(query);
+			for (int i = 0; i < popularDestinations.size(); i++) {
+			System.out.println("Ranking: " + (i + 1));
+			System.out.println("Destination: " + popularDestinations.get(i).get(0).replaceAll("\\s+",""));
+			System.out.println("Number of flights: " + popularDestinations.get(i).get(1));
+			System.out.println("---------");
+			}
+		}
+		catch(Exception e){
+			 System.err.println (e.getMessage());
+		}
 	}
 
 	public static void ListHighestRatedRoutes(AirBooking esql){//7
