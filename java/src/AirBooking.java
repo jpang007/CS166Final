@@ -24,6 +24,9 @@ import java.io.InputStreamReader;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Set;
+import java.util.HashSet;
+import java.text.DecimalFormat;
 
 /**
  * This class defines a simple embedded SQL utility class that is designed to
@@ -714,7 +717,7 @@ public class AirBooking{
 	public static void ListAvailableFlightsBetweenOriginAndDestination(AirBooking esql) throws Exception{//5
 		//List all flights between origin and distination (i.e. flightNum,origin,destination,plane,duration)
 		String input = "";
-		String query = "SELECT flightNum, plane, duration FROM Flight WHERE origin = '";
+		String query = "SELECT * FROM Flight WHERE origin = '";
 		Integer repeatFlag = 1;
 
 		System.out.print("Enter the origin for all flights you want to see: ");
@@ -808,6 +811,104 @@ public class AirBooking{
 
 	public static void ListHighestRatedRoutes(AirBooking esql){//7
 		//List the k highest rated Routes (i.e. Airline Name, flightNum, Avg_Score)
+		//airline name, flight number, origin, destination, plane, and avg_score.
+		try{
+			String input = "";
+			String input2 = "";
+			String query = "SELECT flightNum,AVG(score) as ratingScore FROM Ratings GROUP BY flightNum ORDER BY ratingScore DESC LIMIT ";
+			Integer repeatFlag = 1;
+			List<List<String>> flightNumAndScore;
+			List<List<String>> airList;
+			List<List<String>> airlineNameandID;
+
+			System.out.println("How many of the highest rated flights would you like to see?");
+			do { //performs check to make sure user entered something
+				input = in.readLine();
+				repeatFlag = 1;
+				if (Integer.parseInt(input) < 1) {
+					System.out.println("Can not have less than one number of highest rated flights");
+					repeatFlag = 0;
+				}
+				// TODO: Can add functionality to let user know there isn't that many flights
+				// if (Integer.parseInt(input) > totalNumberOfFlights.size()) {
+				// 	System.out.println("There are less number of flights than the number you provided.");
+				// 	System.out.println("Would you like to see all avaliable flights? Y/N");
+				// 	input2 = in.readLine();
+				// 	if (input2.equals("Y")) {
+				// 		System.out.println("Now outputting the total number of flight: " + totalNumberOfFlights.size());
+				// 		break;
+				// 	}
+				// 	else if (input2.equals("N")) {
+				// 		System.out.println("Okay. Please try again.");
+				// 		System.out.println("How many highest rated flights would you like to see?");
+				// 		repeatFlag = 0;
+				// 	}
+				// 	else {
+				// 		System.out.println("Please enter Y or N.");
+				// 		repeatFlag = 0;
+				// 	}
+				//}
+			} while(repeatFlag == 0);
+			query += input + ";";
+
+			flightNumAndScore = esql.executeQueryAndReturnResult(query);
+			// finding all airIDs, origin, destination,plane,flightNum
+			query = "SELECT airID,origin,destination,plane,flightNum FROM Flight WHERE flightNum in (";
+			for (int i = 0; i < flightNumAndScore.size(); i++) {
+					if (i == (flightNumAndScore.size() - 1)) {
+						query += "'" + flightNumAndScore.get(i).get(0).replaceAll("\\s+","") + "');";
+					}
+					else {
+						query += "'" + flightNumAndScore.get(i).get(0).replaceAll("\\s+","") + "', ";
+					}
+			}
+			airList = esql.executeQueryAndReturnResult(query);
+			// finding the name of the airline
+			query = "SELECT name,airID FROM Airline WHERE airID in (";
+			for (int i = 0; i < airList.size(); i++) {
+					if (i == (airList.size() - 1)) {
+						query += "'" + airList.get(i).get(0) + "');";
+					}
+					else {
+						query += "'" + airList.get(i).get(0) + "', ";
+					}
+			}
+			airlineNameandID = esql.executeQueryAndReturnResult(query);
+
+			System.out.println(airList);
+			System.out.println(airlineNameandID);
+
+			List<String> printOut = new ArrayList<String>();
+
+			//Need to combine all three lists now
+			DecimalFormat df = new DecimalFormat("0.#####");
+
+			for (int i = 0; i < flightNumAndScore.size(); i++) {
+				System.out.println("Flight Number: " + flightNumAndScore.get(i).get(0));
+				// TODO: Need to fix output of integer
+				String result = df.format(Double.valueOf(flightNumAndScore.get(i).get(1)));
+				System.out.println("Score: "+ result);
+				// System.out.println("Score: " + flightNumAndScore.get(i).get(1));
+				// Using flight number extract everything else
+				for (int j = 0; j < airList.size(); j++) {
+					if (flightNumAndScore.get(i).get(0).equals(airList.get(j).get(4))) {
+						System.out.println("Origin: " + airList.get(j).get(1));
+						System.out.println("Destination: " + airList.get(j).get(2));
+						System.out.println("Plane type: " + airList.get(j).get(3));
+					}
+				}
+				for (int j = 0; j < airlineNameandID.size(); j++) {
+					if (airList.get(i).get(0).equals(airlineNameandID.get(j).get(1))) {
+						System.out.println("Airline Name: " + airlineNameandID.get(j).get(0));
+					}
+				}
+				System.out.println("---------");
+
+			}
+		}
+		catch(Exception e){
+			 System.err.println (e.getMessage());
+		}
 	}
 
 	public static void ListFlightFromOriginToDestinationInOrderOfDuration(AirBooking esql){//8
