@@ -323,7 +323,7 @@ public class AirBooking{
 					repeatFlag = 0;
 				}
 				else if (input.length() != 10) {
-					System.out.println("Please enter a 10 digit Passport Number");
+					System.out.println("Please enter a 10 character Passport Number");
 					repeatFlag = 0;
 				}
 				boolean allLetters = input.chars().allMatch(Character::isLetter);
@@ -603,7 +603,8 @@ public class AirBooking{
 			List<List<String>> flightNum;
 			List<List<String>> passNum;
 			Integer repeatFlag = 1;
-
+			Integer skipFlag = 0;
+			String multipleCityQuery = "";
 			List<List<String>> maxID;
 
 			String testquery = "SELECT MAX(rID) from Ratings";
@@ -649,9 +650,30 @@ public class AirBooking{
 							System.out.println("Please enter a valid flight path.");
 							repeatFlag = 0;
 						}
+						if (flightNum.size() > 1) { // in case there are multiple flights
+							System.out.println("There seems to be multiple flights from these two cities.");
+							System.out.println("Please choose which one would you prefer to take by Flight Number.");
+							multipleCityQuery = "SELECT * FROM Flight WHERE origin = '" + originInput
+							+ "' AND destination = '" + destInput + "';";
+							do {
+								repeatFlag = 1;
+								skipFlag = 1;
+								esql.executeQueryAndPrintResult(multipleCityQuery);
+								input = in.readLine();
+								String uniqueChecker = "SELECT * FROM Flight WHERE flightNum = '";
+								uniqueChecker += input + "' AND Origin = '" + originInput + "' AND destination = '" + destInput + "' LIMIT 1;";
+								if (esql.executeQuery(uniqueChecker) == 0) {
+									System.out.println("There is no existing Flight Number from those two cities.");
+									System.out.println("Try entering it again.");
+									repeatFlag = 0;
+								}
+						 } while (repeatFlag == 0);
+					 }
 					} while (repeatFlag == 0);
-					System.out.println("The corresponding flightNum is: " + flightNum.get(0).get(0));
-					input = flightNum.get(0).get(0).replaceAll("\\s+","");
+					if (skipFlag == 0) {
+						System.out.println("The corresponding flightNum is: " + flightNum.get(0).get(0));
+						input = flightNum.get(0).get(0).replaceAll("\\s+","");
+					}
 					break;
 				}
 				String uniqueChecker = "SELECT * FROM Flight WHERE flightNum = '";
@@ -695,6 +717,7 @@ public class AirBooking{
 					query += ", " + input + ")";
 				}
 				else if (input.equals("N")) { // end query
+					query += ")";
 					break;
 				}
 				else {
@@ -704,6 +727,7 @@ public class AirBooking{
 			} while (repeatFlag == 0);
 
 			System.out.println(query);
+			// esql.executeQuery(query);
 
 		}catch(Exception e){
 			 System.err.println (e.getMessage());
@@ -820,6 +844,10 @@ public class AirBooking{
 			List<List<String>> flightNumAndScore;
 			List<List<String>> airList;
 			List<List<String>> airlineNameandID;
+			List<List<String>> totalNumberofReviews;
+
+			String totalReviews = "SELECT COUNT(*) FROM Ratings GROUP BY flightNum";
+			totalNumberofReviews = esql.executeQueryAndReturnResult(totalReviews);
 
 			System.out.println("How many of the highest rated flights would you like to see?");
 			do { //performs check to make sure user entered something
@@ -830,24 +858,24 @@ public class AirBooking{
 					repeatFlag = 0;
 				}
 				// TODO: Can add functionality to let user know there isn't that many flights
-				// if (Integer.parseInt(input) > totalNumberOfFlights.size()) {
-				// 	System.out.println("There are less number of flights than the number you provided.");
-				// 	System.out.println("Would you like to see all avaliable flights? Y/N");
-				// 	input2 = in.readLine();
-				// 	if (input2.equals("Y")) {
-				// 		System.out.println("Now outputting the total number of flight: " + totalNumberOfFlights.size());
-				// 		break;
-				// 	}
-				// 	else if (input2.equals("N")) {
-				// 		System.out.println("Okay. Please try again.");
-				// 		System.out.println("How many highest rated flights would you like to see?");
-				// 		repeatFlag = 0;
-				// 	}
-				// 	else {
-				// 		System.out.println("Please enter Y or N.");
-				// 		repeatFlag = 0;
-				// 	}
-				//}
+				if (Integer.parseInt(input) > totalNumberofReviews.size()) {
+					System.out.println("There are less number of reviews than the number you provided.");
+					System.out.println("Would you like to see all avaliable reviews? Y/N");
+					input2 = in.readLine();
+					if (input2.equals("Y")) {
+						System.out.println("Now outputting the total number of flight: " + totalNumberofReviews.size());
+						break;
+					}
+					else if (input2.equals("N")) {
+						System.out.println("Okay. Please try again.");
+						System.out.println("How many highest rated reviews would you like to see?");
+						repeatFlag = 0;
+					}
+					else {
+						System.out.println("Please enter Y or N.");
+						repeatFlag = 0;
+					}
+				}
 			} while(repeatFlag == 0);
 			query += input + ";";
 
@@ -874,10 +902,6 @@ public class AirBooking{
 					}
 			}
 			airlineNameandID = esql.executeQueryAndReturnResult(query);
-
-			System.out.println(airList);
-			System.out.println(airlineNameandID);
-
 			List<String> printOut = new ArrayList<String>();
 
 			//Need to combine all three lists now
@@ -886,9 +910,7 @@ public class AirBooking{
 			for (int i = 0; i < flightNumAndScore.size(); i++) {
 				System.out.println("Flight Number: " + flightNumAndScore.get(i).get(0));
 				// TODO: Need to fix output of integer
-				String result = df.format(Double.valueOf(flightNumAndScore.get(i).get(1)));
-				System.out.println("Score: "+ result);
-				// System.out.println("Score: " + flightNumAndScore.get(i).get(1));
+				System.out.println("Score: " + flightNumAndScore.get(i).get(1));
 				// Using flight number extract everything else
 				for (int j = 0; j < airList.size(); j++) {
 					if (flightNumAndScore.get(i).get(0).equals(airList.get(j).get(4))) {
