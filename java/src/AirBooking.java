@@ -779,7 +779,11 @@ public class AirBooking{
 							do {
 								input = in.readLine();
 								repeatFlag = 1;
-								if (Integer.parseInt(input) > 53) {
+								if (input == null || input.isEmpty()) {
+									System.out.println("Please enter an airID\n");
+									repeatFlag = 0;
+								}
+								else if (Integer.parseInt(input) > 53 || Integer.parseInt(input) < 0) {
 									System.out.println("That is not a valid AirID. Please try again.");
 									repeatFlag = 0;
 								}
@@ -792,6 +796,10 @@ public class AirBooking{
 								repeatFlag = 1;
 								uniqueChecker = "SELECT * FROM Flight WHERE flightNum = '";
 								uniqueChecker += input + "' LIMIT 1;";
+								if (input == null || input.isEmpty()) {
+									System.out.println("Please enter a flightNum\n");
+									repeatFlag = 0;
+								}
 								if (esql.executeQuery(uniqueChecker) == 1) {
 									System.out.println("This flightNum already exists, try again");
 									repeatFlag = 0;
@@ -832,14 +840,25 @@ public class AirBooking{
 							typeHandler = "destination = " + input;
 						}
 						else if (input.equals("plane")) {
-							input = in.readLine();
+							do {
+								repeatFlag = 1;
+								input = in.readLine();
+								if (input == null || input.isEmpty()) {
+									System.out.println("Please enter a plane type\n");
+									repeatFlag = 0;
+								}
+							} while (repeatFlag == 0);
 							typeHandler = "plane = " + input;
 						}
 						else if (input.equals("seats")) {
 							do {
 								repeatFlag = 1;
 								input = in.readLine();
-								if (Integer.parseInt(input) < 0) {
+								if (input == null || input.isEmpty()) {
+									System.out.println("Please enter a number of seats\n");
+									repeatFlag = 0;
+								}
+								else if (Integer.parseInt(input) < 0) {
 									System.out.println("There can not be negative seats. Try again.");
 									repeatFlag = 0;
 								}
@@ -850,7 +869,11 @@ public class AirBooking{
 							do {
 								repeatFlag = 1;
 								input = in.readLine();
-								if (Integer.parseInt(input) < 0) {
+								if (input == null || input.isEmpty()) {
+									System.out.println("Please enter a duration\n");
+									repeatFlag = 0;
+								}
+								else if (Integer.parseInt(input) < 0) {
 									System.out.println("There can not be negative duration. Try again.");
 									repeatFlag = 0;
 								}
@@ -873,14 +896,18 @@ public class AirBooking{
 					do {
 						input = in.readLine();
 						repeatFlag = 1;
-						if (Integer.parseInt(input) > 53) {
+						if (input == null || input.isEmpty()) {
+							System.out.println("You didn't enter an AirID. Please enter an AirID.\n");
+							repeatFlag = 0;
+						}
+						else if (Integer.parseInt(input) > 53 || Integer.parseInt(input) < 0) {
 							System.out.println("That is not a valid AirID. Please try again.");
 							repeatFlag = 0;
 						}
 					} while (repeatFlag == 0);
 					query += input + ", ";
 
-					System.out.println("Please enter the FlightNum"); // unique
+					System.out.println("Please enter the flightNum"); // unique
 					do {
 						input = in.readLine();
 						repeatFlag = 1;
@@ -888,6 +915,10 @@ public class AirBooking{
 						uniqueChecker += input + "' LIMIT 1;";
 						if (esql.executeQuery(uniqueChecker) == 1) {
 							System.out.println("This flightNum already exists, try again");
+							repeatFlag = 0;
+						}
+						if (input == null || input.isEmpty()) {
+							System.out.println("You didn't enter a flightNum. Please enter a flightNum.\n");
 							repeatFlag = 0;
 						}
 					} while (repeatFlag == 0);
@@ -898,7 +929,7 @@ public class AirBooking{
 						input = in.readLine();
 						repeatFlag = 1;
 						if (input == null || input.isEmpty()) {
-							System.out.println("Please enter a origin location\n");
+							System.out.println("You didn't enter an origin. Please enter a origin location.\n");
 							repeatFlag = 0;
 						}
 						allLetters = input.chars().allMatch(Character::isLetter);
@@ -914,7 +945,7 @@ public class AirBooking{
 						input = in.readLine();
 						repeatFlag = 1;
 						if (input == null || input.isEmpty()) {
-							System.out.println("Please enter a destination location\n");
+							System.out.println("You didn't enter a destination. Please enter a destination location.\n");
 							repeatFlag = 0;
 						}
 						allLetters = input.chars().allMatch(Character::isLetter);
@@ -926,14 +957,25 @@ public class AirBooking{
 					query += input + ", ";
 
 					System.out.println("Please enter the type of plane"); // Not sure how to set up checks
-					input = in.readLine();
+					do {
+						repeatFlag = 1;
+						input = in.readLine();
+						if (input == null || input.isEmpty()) {
+							System.out.println("You didn't enter a plane type. Please enter a plane type.\n");
+							repeatFlag = 0;
+						}
+					} while (repeatFlag == 0);
 					query += input + ", ";
 
 					System.out.println("Please enter the number of seats");
 					do {
 						repeatFlag = 1;
 						input = in.readLine();
-						if (Integer.parseInt(input) < 0) {
+						if (input == null || input.isEmpty()) {
+							System.out.println("You didn't enter a number of seats. Please enter a number of seats.\n");
+							repeatFlag = 0;
+						}
+						else if (Integer.parseInt(input) < 0) {
 							System.out.println("There can not be negative seats. Try again.");
 							repeatFlag = 0;
 						}
@@ -944,7 +986,11 @@ public class AirBooking{
 					do {
 						repeatFlag = 1;
 						input = in.readLine();
-						if (Integer.parseInt(input) < 0) {
+						if (input == null || input.isEmpty()) {
+							System.out.println("You didn't enter a duration. Please enter a duration.\n");
+							repeatFlag = 0;
+						}
+						else if (Integer.parseInt(input) < 0) {
 							System.out.println("There can not be negative duration. Try again.");
 							repeatFlag = 0;
 						}
@@ -955,6 +1001,7 @@ public class AirBooking{
 			} while(repeatFlag == 0);
 
 			System.out.println(query);
+			// esql.executeQuery(query);
 		}catch(Exception e){
 			 System.err.println (e.getMessage());
 		}
