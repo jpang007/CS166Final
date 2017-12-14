@@ -736,6 +736,228 @@ public class AirBooking{
 
 	public static void InsertOrUpdateRouteForAirline(AirBooking esql){//4 EXTRA CREDIT
 		//Insert a new route for the airline
+		try{
+			String input = "";
+			String input2 = "";
+			String typeHandler = "";
+			Integer repeatFlag;
+			boolean allLetters;
+			String query = "";
+			String uniqueChecker;
+			System.out.println("Would you like to insert a new route? Or update one?");
+			do { //performs check to make sure user entered something
+				input = in.readLine();
+				repeatFlag = 1;
+				if (input == null || input.isEmpty()) {
+					System.out.println("Please enter a option \n");
+					repeatFlag = 0;
+				}
+				allLetters = input.chars().allMatch(Character::isLetter);
+				if (allLetters == false) {
+					System.out.println("Please enter only characters\n");
+					repeatFlag = 0;
+				}
+				if (input.equals("Update") || input.equals("update")) {
+					query = "UPDATE Flights SET ";
+					System.out.println("Please provide the flightNum of the flight you would like to edit");
+					do {
+						input2 = in.readLine(); // have to save for later
+						repeatFlag = 1;
+						uniqueChecker = "SELECT * FROM Flight WHERE flightNum = '";
+						uniqueChecker += input2 + "' LIMIT 1;";
+						if (esql.executeQuery(uniqueChecker) == 0) {
+							System.out.println("This flightNum does not exists, try again");
+							repeatFlag = 0;
+						}
+					} while (repeatFlag == 0);
+					System.out.println("List one option you would like to update.");
+					System.out.println("Options are: airID, flightNum, origin, destination, plane, seats and duration");
+					do {
+						input = in.readLine();
+						System.out.println("What is the new value of the option you would like?");
+						if (input.equals("airID")) {
+							do {
+								input = in.readLine();
+								repeatFlag = 1;
+								if (Integer.parseInt(input) > 53) {
+									System.out.println("That is not a valid AirID. Please try again.");
+									repeatFlag = 0;
+								}
+							} while (repeatFlag == 0);
+							typeHandler = "airID = " + input;
+						}
+						else if (input.equals("flightNum")) { // unique
+							do {
+								input = in.readLine();
+								repeatFlag = 1;
+								uniqueChecker = "SELECT * FROM Flight WHERE flightNum = '";
+								uniqueChecker += input + "' LIMIT 1;";
+								if (esql.executeQuery(uniqueChecker) == 1) {
+									System.out.println("This flightNum already exists, try again");
+									repeatFlag = 0;
+								}
+							} while (repeatFlag == 0);
+							typeHandler = "flightNum = " + input;
+						}
+						else if (input.equals("origin")) {
+							do { //performs check to make sure user entered something
+								input = in.readLine();
+								repeatFlag = 1;
+								if (input == null || input.isEmpty()) {
+									System.out.println("Please enter a origin location\n");
+									repeatFlag = 0;
+								}
+								allLetters = input.chars().allMatch(Character::isLetter);
+								if (allLetters == false) {
+									System.out.println("Please enter only characters\n");
+									repeatFlag = 0;
+								}
+							} while(repeatFlag == 0);
+							typeHandler = "origin = " + input;
+						}
+						else if (input.equals("destination")) {
+							do { //performs check to make sure user entered something
+								input = in.readLine();
+								repeatFlag = 1;
+								if (input == null || input.isEmpty()) {
+									System.out.println("Please enter a destination location\n");
+									repeatFlag = 0;
+								}
+								allLetters = input.chars().allMatch(Character::isLetter);
+								if (allLetters == false) {
+									System.out.println("Please enter only characters\n");
+									repeatFlag = 0;
+								}
+							} while(repeatFlag == 0);
+							typeHandler = "destination = " + input;
+						}
+						else if (input.equals("plane")) {
+							input = in.readLine();
+							typeHandler = "plane = " + input;
+						}
+						else if (input.equals("seats")) {
+							do {
+								repeatFlag = 1;
+								input = in.readLine();
+								if (Integer.parseInt(input) < 0) {
+									System.out.println("There can not be negative seats. Try again.");
+									repeatFlag = 0;
+								}
+							} while (repeatFlag == 0);
+							typeHandler = "seats = " + input;
+						}
+						else if (input.equals("duration")) {
+							do {
+								repeatFlag = 1;
+								input = in.readLine();
+								if (Integer.parseInt(input) < 0) {
+									System.out.println("There can not be negative duration. Try again.");
+									repeatFlag = 0;
+								}
+							} while (repeatFlag == 0);
+							typeHandler = "duration = " + input;
+						}
+						else {
+							repeatFlag = 0;
+							System.out.println("You didn't enter a correct option. Try again.");
+						}
+						query += typeHandler + " WHERE flightNum = " + input2 + ";";
+					} while (repeatFlag == 0);
+					break;
+				}
+
+				else if (input.equals("Insert") || input.equals("insert")) {
+					query = "INSERT INTO Flights VALUES(";
+
+					System.out.println("Please enter the AirID"); // Has to be less than 53
+					do {
+						input = in.readLine();
+						repeatFlag = 1;
+						if (Integer.parseInt(input) > 53) {
+							System.out.println("That is not a valid AirID. Please try again.");
+							repeatFlag = 0;
+						}
+					} while (repeatFlag == 0);
+					query += input + ", ";
+
+					System.out.println("Please enter the FlightNum"); // unique
+					do {
+						input = in.readLine();
+						repeatFlag = 1;
+						uniqueChecker = "SELECT * FROM Flight WHERE flightNum = '";
+						uniqueChecker += input + "' LIMIT 1;";
+						if (esql.executeQuery(uniqueChecker) == 1) {
+							System.out.println("This flightNum already exists, try again");
+							repeatFlag = 0;
+						}
+					} while (repeatFlag == 0);
+					query += input + ", ";
+
+					System.out.println("Please enter the origin of the flight");
+					do { //performs check to make sure user entered something
+						input = in.readLine();
+						repeatFlag = 1;
+						if (input == null || input.isEmpty()) {
+							System.out.println("Please enter a origin location\n");
+							repeatFlag = 0;
+						}
+						allLetters = input.chars().allMatch(Character::isLetter);
+						if (allLetters == false) {
+							System.out.println("Please enter only characters\n");
+							repeatFlag = 0;
+						}
+					} while(repeatFlag == 0);
+					query += input + ", ";
+
+					System.out.println("Please enter the destination of the flight");
+					do { //performs check to make sure user entered something
+						input = in.readLine();
+						repeatFlag = 1;
+						if (input == null || input.isEmpty()) {
+							System.out.println("Please enter a destination location\n");
+							repeatFlag = 0;
+						}
+						allLetters = input.chars().allMatch(Character::isLetter);
+						if (allLetters == false) {
+							System.out.println("Please enter only characters\n");
+							repeatFlag = 0;
+						}
+					} while(repeatFlag == 0);
+					query += input + ", ";
+
+					System.out.println("Please enter the type of plane"); // Not sure how to set up checks
+					input = in.readLine();
+					query += input + ", ";
+
+					System.out.println("Please enter the number of seats");
+					do {
+						repeatFlag = 1;
+						input = in.readLine();
+						if (Integer.parseInt(input) < 0) {
+							System.out.println("There can not be negative seats. Try again.");
+							repeatFlag = 0;
+						}
+					} while (repeatFlag == 0);
+					query += input + ", ";
+
+					System.out.println("Please enter the duration");
+					do {
+						repeatFlag = 1;
+						input = in.readLine();
+						if (Integer.parseInt(input) < 0) {
+							System.out.println("There can not be negative duration. Try again.");
+							repeatFlag = 0;
+						}
+					} while (repeatFlag == 0);
+					query += input + ");";
+					break;
+				}
+			} while(repeatFlag == 0);
+
+			System.out.println(query);
+		}catch(Exception e){
+			 System.err.println (e.getMessage());
+		}
 	}
 
 	public static void ListAvailableFlightsBetweenOriginAndDestination(AirBooking esql) throws Exception{//5
