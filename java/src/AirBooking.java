@@ -1249,10 +1249,13 @@ public class AirBooking{
 		//List flight to destination in order of duration (i.e. Airline name, flightNum, origin, destination, duration, plane)
 		String input = "";
 		String query = "SELECT * FROM Flight WHERE origin = '";
+		String origin = "";
+		String destination = "";
 		Integer repeatFlag = 1;
 		Integer repeatFlag2 = 1;
 
 		do{
+			repeatFlag2 = 1;
 			System.out.print("Enter the origin for all flights you want to see: ");
 			do { //performs check to make sure user entered something
 				input = in.readLine();
@@ -1267,6 +1270,7 @@ public class AirBooking{
 					repeatFlag = 0;
 				}
 			} while(repeatFlag == 0);
+			origin = input;
 			query += input + "' AND destination = '";
 
 			System.out.print("Enter the destination for all flights you want to see: ");
@@ -1283,6 +1287,7 @@ public class AirBooking{
 					repeatFlag = 0;
 				}
 			} while(repeatFlag == 0);
+			destination = input;
 			query += input + "'";
 
 			System.out.print("Enter the number of flights you want to see: ");
@@ -1313,13 +1318,14 @@ public class AirBooking{
 
 			query += " ORDER BY duration ASC LIMIT " + input + ";";
 
-			Integer stringChecker = esql.executeQueryAndPrintResult(query);
+			Integer stringChecker = esql.executeQuery(query);
 			if (stringChecker == 0) {
-				System.out.println("Sorry there were no flights from " + origin + " to " + dest);
+				System.out.println("Sorry there were no flights from " + origin + " to " + destination);
 				System.out.println("Would you like to try again? (Y/N)");
 				input = in.readLine();
 				if (input.equals("Y")) {
-					restartFlag2 = 0;
+					query = "SELECT * FROM Flight WHERE origin = '";
+					repeatFlag2 = 0;
 				}
 				else if (input.equals("N")) {
 					System.out.println("Okay! Goodbye!");
