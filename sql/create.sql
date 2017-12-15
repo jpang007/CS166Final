@@ -1,4 +1,8 @@
 -- DROP STATEMENTS
+DROP INDEX IF EXISTS pIDPassengerIndex;
+DROP INDEX IF EXISTS flightNumIndex;
+DROP INDEX IF EXISTS pIDBookingIndex;
+
 DROP TABLE IF EXISTS Airline CASCADE;
 DROP TABLE IF EXISTS Passenger CASCADE;
 DROP TABLE IF EXISTS Flight CASCADE;
@@ -131,5 +135,9 @@ COPY Booking (
 FROM 'bookings.csv'
 WITH DELIMITER ',';
 --SELECT * FROM Booking;
+
+CREATE INDEX pIDPassengerIndex ON Passenger(pID);
+CREATE INDEX flightNumIndex ON Flight(flightNum);
+CREATE INDEX pIDBookingIndex ON Booking(pid);
 
 

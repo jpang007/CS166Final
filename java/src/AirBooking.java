@@ -1202,12 +1202,252 @@ public class AirBooking{
 		}
 	}
 
-	public static void ListFlightFromOriginToDestinationInOrderOfDuration(AirBooking esql){//8
+	public static void ListFlightFromOriginToDestinationInOrderOfDuration(AirBooking esql) throws Exception{//8
 		//List flight to destination in order of duration (i.e. Airline name, flightNum, origin, destination, duration, plane)
+
+		String input = "";
+		String query = "SELECT * FROM Flight WHERE origin = '";
+		Integer repeatFlag = 1;
+
+		System.out.print("Enter the origin for all flights you want to see: ");
+		do { //performs check to make sure user entered something
+			input = in.readLine();
+			repeatFlag = 1;
+			if (input == null || input.isEmpty()) {
+				System.out.println("Please enter a origin location\n");
+				repeatFlag = 0;
+			}
+			boolean allLetters = input.chars().allMatch(Character::isLetter);
+			if (allLetters == false) {
+				System.out.println("Please enter only characters\n");
+				repeatFlag = 0;
+			}
+		} while(repeatFlag == 0);
+		query += input + "' AND destination = '";
+
+		System.out.print("Enter the destination for all flights you want to see: ");
+		do { //performs check to make sure user entered something
+			input = in.readLine();
+			repeatFlag = 1;
+			if (input == null || input.isEmpty()) {
+				System.out.println("Please enter a destination location\n");
+				repeatFlag = 0;
+			}
+			boolean allLetters = input.chars().allMatch(Character::isLetter);
+			if (allLetters == false) {
+				System.out.println("Please enter only characters\n");
+				repeatFlag = 0;
+			}
+		} while(repeatFlag == 0);
+		query += input + "'";
+
+		System.out.print("Enter the number of flights you want to see: ");
+		do { //performs check to make sure user entered something
+			input = in.readLine();
+			repeatFlag = 1;
+			if (input == null || input.isEmpty()) {
+				System.out.println("Please enter a the number of flights you want to see\n");
+				repeatFlag = 0;
+			}
+			//boolean allLetters = input.chars().allMatch(Character::isLetter);
+			boolean isNum = false;
+			try 
+			{
+				int num = Integer.parseInt(input);
+				isNum = true;
+    		}
+    		catch (NumberFormatException e) 
+    		{
+        		isNum = false;
+    		}
+			if (isNum == false) {
+				System.out.println("Please enter only numbers");
+				System.out.print("Enter the number of flights you want to see: ");
+				repeatFlag = 0;
+			}
+		} while(repeatFlag == 0);
+		query += " ORDER BY duration ASC LIMIT " + input + ";";
+
+		esql.executeQueryAndPrintResult(query);
 	}
 
-	public static void FindNumberOfAvailableSeatsForFlight(AirBooking esql){//9
+	public static void FindNumberOfAvailableSeatsForFlight(AirBooking esql) throws Exception{//9
 		//
+		String input = "";
+		String query = "SELECT * FROM Flight WHERE origin = '";
+		String testQuery = "";
+		String flightNum = "";
+		String departureDate = "";
+		Integer repeatFlag = 1;
+		Integer repeatFlag2 = 1;
+		Integer x = 0;
+
+		//System.out.println("Please enter the flightNum");
+		do {
+			System.out.println("Please enter the flightNum");
+			input = in.readLine();
+			repeatFlag = 1;
+			if (input == null || input.isEmpty()) {
+				System.out.println("You didn't enter a flightNum. Please enter a flightNum.\n");
+				repeatFlag = 0;
+			}
+			else // testing if flight number is valid/exists
+			{
+				testQuery = "SELECT * FROM Flight WHERE flightNum =" + "\'" + input + "\'" + ";";
+				try
+				{
+					x = esql.executeQuery(testQuery); //checking how many rows this flightNum returns when selected
+				}
+				catch (Exception e) 
+				{
+					System.out.println("Your query is invalid!");
+					repeatFlag = 0;
+				} 
+				if(x == 0)
+				{
+					System.out.println("Invalid flight number. Try again.");
+					repeatFlag = 0;
+				}
+				else
+					flightNum = input;
+			}
+
+		} while (repeatFlag == 0);
+
+		System.out.println("Please enter the date you wish to leave");
+		Integer inputMonth = 0;
+		Integer inputDay = 0;
+		Integer inputYear = 0;
+		boolean isNum = false;
+		do{
+			repeatFlag2 = 1;
+			do { //performs check to make sure user entered something
+				repeatFlag = 1;
+				try // month 
+				{
+					System.out.print("Enter departure month in numbers (ex. 1 is January): ");
+					inputMonth = Integer.parseInt(in.readLine());
+					if (inputMonth < 1 || inputMonth > 12) {
+						System.out.print("Please enter a valid month ");
+						repeatFlag = 0;
+					}
+					isNum = true;
+				}
+				catch (NumberFormatException e) 
+				{
+		    		isNum = false;
+				}
+				if (isNum == false) {
+					System.out.println("Please enter only numbers");
+					repeatFlag = 0;
+				}
+			} while(repeatFlag == 0);
+
+			do { //performs check to make sure user entered something
+				repeatFlag = 1;
+				try // date
+				{
+					repeatFlag = 1;
+					System.out.print("Enter departure day in numbers (ex. 15): ");
+					inputDay = Integer.parseInt(in.readLine());
+					if (inputDay < 1 || inputDay > 31) {
+						System.out.print("Please enter a valid day ");
+						repeatFlag = 0;
+					}
+					isNum = true;
+				}
+				catch (NumberFormatException e) 
+				{
+		    		isNum = false;
+				}
+				if (isNum == false) {
+					System.out.println("Please enter only numbers");
+					repeatFlag = 0;
+				}
+			} while(repeatFlag == 0);
+
+			do { //performs check to make sure user entered something
+				repeatFlag = 1;
+				try // year
+				{
+					repeatFlag = 1;
+					System.out.print("Enter departure year greater than 1900: ");
+					inputYear = Integer.parseInt(in.readLine());
+					if (inputYear < 1900) {
+						System.out.print("Please enter a valid year ");
+						repeatFlag = 0;
+					}
+					isNum = true;
+				}
+				catch (NumberFormatException e) 
+				{
+		    		isNum = false;
+				}
+				if (isNum == false) {
+					System.out.println("Please enter only numbers");
+					repeatFlag = 0;
+				}
+			} while(repeatFlag == 0);
+
+			departureDate = inputMonth + "/" + inputDay + "/" + inputYear;
+
+			// testing if date is valid/exists
+			testQuery = "SELECT * FROM Booking WHERE departure = '" + departureDate + "';";
+			try
+			{
+				x = esql.executeQuery(testQuery); //checking how many rows this flightNum returns when selected
+			}
+			catch (Exception e) 
+			{
+				System.out.println("Your query is invalid!");
+				repeatFlag2 = 0;
+			} 
+			if(x == 0)
+			{
+				System.out.println("There are no flights on this date. Please select a valid date.");
+				repeatFlag2 = 0;
+			}
+
+		} while(repeatFlag2 == 0);
+
+		// at this point, a valid flightNum and departureDate is confirmed
+		// count how many flights are booked under that flight/date
+
+		testQuery = "SELECT COUNT(pID) FROM Booking WHERE flightNum = '" + flightNum + "' AND departure = '" + departureDate + "';";
+			
+		// how many rows returned = number of flights booked
+		List<List<String>> numBooked = esql.executeQueryAndReturnResult(testQuery);
+
+		Integer numBookedInt = 0;
+		try
+		{
+			numBookedInt = Integer.parseInt(numBooked.get(0).get(0));
+		}
+		catch (NumberFormatException e) 
+		{
+    		System.out.println("Not a number");
+		}
+
+		testQuery = "SELECT origin, destination, seats FROM Flight WHERE flightNum = '" + flightNum + "';";
+		List<List<String>> airList = esql.executeQueryAndReturnResult(testQuery);
+		System.out.println("Flight Number: " + flightNum);
+		System.out.println("Origin: " + airList.get(0).get(0));
+		System.out.println("Destination: " + airList.get(0).get(1));
+		System.out.println("Departure Date: " + departureDate);
+
+		String numSeats = airList.get(0).get(2);
+		System.out.println("Total Number of Seats: " + numSeats);
+		Integer numSeatsInt = 0;
+		try
+		{
+			numSeatsInt = Integer.parseInt(numSeats);
+		}
+		catch (NumberFormatException e) 
+		{
+    		System.out.println("Not a number");
+		}
+		Integer remainingSeats = numSeatsInt - numBookedInt;
+		System.out.println("Number of Avaiable Seats: " + remainingSeats);
 
 	}
 
