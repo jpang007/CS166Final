@@ -1247,69 +1247,90 @@ public class AirBooking{
 
 	public static void ListFlightFromOriginToDestinationInOrderOfDuration(AirBooking esql) throws Exception{//8
 		//List flight to destination in order of duration (i.e. Airline name, flightNum, origin, destination, duration, plane)
-
 		String input = "";
 		String query = "SELECT * FROM Flight WHERE origin = '";
 		Integer repeatFlag = 1;
+		Integer repeatFlag2 = 1;
 
-		System.out.print("Enter the origin for all flights you want to see: ");
-		do { //performs check to make sure user entered something
-			input = in.readLine();
-			repeatFlag = 1;
-			if (input == null || input.isEmpty()) {
-				System.out.println("Please enter a origin location\n");
-				repeatFlag = 0;
-			}
-			boolean allLetters = input.chars().allMatch(Character::isLetter);
-			if (allLetters == false) {
-				System.out.println("Please enter only characters\n");
-				repeatFlag = 0;
-			}
-		} while(repeatFlag == 0);
-		query += input + "' AND destination = '";
+		do{
+			System.out.print("Enter the origin for all flights you want to see: ");
+			do { //performs check to make sure user entered something
+				input = in.readLine();
+				repeatFlag = 1;
+				if (input == null || input.isEmpty()) {
+					System.out.println("Please enter a origin location\n");
+					repeatFlag = 0;
+				}
+				boolean allLetters = input.chars().allMatch(Character::isLetter);
+				if (allLetters == false) {
+					System.out.println("Please enter only characters\n");
+					repeatFlag = 0;
+				}
+			} while(repeatFlag == 0);
+			query += input + "' AND destination = '";
 
-		System.out.print("Enter the destination for all flights you want to see: ");
-		do { //performs check to make sure user entered something
-			input = in.readLine();
-			repeatFlag = 1;
-			if (input == null || input.isEmpty()) {
-				System.out.println("Please enter a destination location\n");
-				repeatFlag = 0;
-			}
-			boolean allLetters = input.chars().allMatch(Character::isLetter);
-			if (allLetters == false) {
-				System.out.println("Please enter only characters\n");
-				repeatFlag = 0;
-			}
-		} while(repeatFlag == 0);
-		query += input + "'";
+			System.out.print("Enter the destination for all flights you want to see: ");
+			do { //performs check to make sure user entered something
+				input = in.readLine();
+				repeatFlag = 1;
+				if (input == null || input.isEmpty()) {
+					System.out.println("Please enter a destination location\n");
+					repeatFlag = 0;
+				}
+				boolean allLetters = input.chars().allMatch(Character::isLetter);
+				if (allLetters == false) {
+					System.out.println("Please enter only characters\n");
+					repeatFlag = 0;
+				}
+			} while(repeatFlag == 0);
+			query += input + "'";
 
-		System.out.print("Enter the number of flights you want to see: ");
-		do { //performs check to make sure user entered something
-			input = in.readLine();
-			repeatFlag = 1;
-			if (input == null || input.isEmpty()) {
-				System.out.println("Please enter a the number of flights you want to see\n");
-				repeatFlag = 0;
+			System.out.print("Enter the number of flights you want to see: ");
+			do { //performs check to make sure user entered something
+				input = in.readLine();
+				repeatFlag = 1;
+				if (input == null || input.isEmpty()) {
+					System.out.println("Please enter a the number of flights you want to see\n");
+					repeatFlag = 0;
+				}
+				//boolean allLetters = input.chars().allMatch(Character::isLetter);
+				boolean isNum = false;
+				try 
+				{
+					int num = Integer.parseInt(input);
+					isNum = true;
+	    		}
+	    		catch (NumberFormatException e) 
+	    		{
+	        		isNum = false;
+	    		}
+				if (isNum == false) {
+					System.out.println("Please enter only numbers");
+					System.out.print("Enter the number of flights you want to see: ");
+					repeatFlag = 0;
+				}
+			} while(repeatFlag == 0);
+
+			query += " ORDER BY duration ASC LIMIT " + input + ";";
+
+			Integer stringChecker = esql.executeQueryAndPrintResult(query);
+			if (stringChecker == 0) {
+				System.out.println("Sorry there were no flights from " + origin + " to " + dest);
+				System.out.println("Would you like to try again? (Y/N)");
+				input = in.readLine();
+				if (input.equals("Y")) {
+					restartFlag2 = 0;
+				}
+				else if (input.equals("N")) {
+					System.out.println("Okay! Goodbye!");
+					break;
+				}
+				else {
+					System.out.println("I'm going to assume you want to quit. Bye!");
+					break;
+				}
 			}
-			//boolean allLetters = input.chars().allMatch(Character::isLetter);
-			boolean isNum = false;
-			try 
-			{
-				int num = Integer.parseInt(input);
-				isNum = true;
-    		}
-    		catch (NumberFormatException e) 
-    		{
-        		isNum = false;
-    		}
-			if (isNum == false) {
-				System.out.println("Please enter only numbers");
-				System.out.print("Enter the number of flights you want to see: ");
-				repeatFlag = 0;
-			}
-		} while(repeatFlag == 0);
-		query += " ORDER BY duration ASC LIMIT " + input + ";";
+		} while(repeatFlag2 == 0);
 
 		esql.executeQueryAndPrintResult(query);
 	}
