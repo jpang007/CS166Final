@@ -304,14 +304,14 @@ public class AirBooking{
 	public static void AddPassenger(AirBooking esql){//1
 		//Add a new passenger to the database
 		try{
-			String query = "INSERT INTO Passenger VALUES(";
+			String query = "INSERT INTO Passenger (pID ,passNum, fullName, bdate, country) VALUES(";
 			String input = "";
 			Integer repeatFlag = 1;
 			List<List<String>> maxID;
 
 			String testquery = "SELECT MAX(pID) from Passenger";
 			maxID = esql.executeQueryAndReturnResult(testquery);
-			query += (Integer.parseInt(maxID.get(0).get(0)) + 1) + ", ";
+			query += (Integer.parseInt(maxID.get(0).get(0)) + 1) + ",'";
 
 			// Insert Passport
 			System.out.print("Enter your Passport Number: "); // make sure it's unique
@@ -339,7 +339,7 @@ public class AirBooking{
 				}
 			} while(repeatFlag == 0);
 			input = input.toUpperCase();
-			query += input + ", ";
+			query += input + "','";
 
 			//Input Name
 			String name = "";
@@ -375,8 +375,8 @@ public class AirBooking{
 				}
 			} while(repeatFlag == 0);
 			input = input.substring(0, 1).toUpperCase() + input.substring(1);
-			name += " " + input;
-			query += name + ", ";
+			name += " " + input + "'";
+			query += name + ",'";
 
 			if (input.length() >= 24) {
 				System.out.println("Please enter a name under 24 characters\n");
@@ -387,29 +387,36 @@ public class AirBooking{
 			Integer inputMonth = 0;
 			Integer inputDay = 0;
 			Integer inputYear = 0;
+			System.out.print("Enter departure month in numbers (ex. 1 is January): ");
 			do { //performs check to make sure user entered something
 				repeatFlag = 1;
-				System.out.println("Enter birth month in numbers (ex. 1 is January): ");
 				inputMonth = Integer.parseInt(in.readLine());
 				if (inputMonth < 1 || inputMonth > 12) {
-					System.out.println("Please enter a valid month ");
+					System.out.print("Please enter a valid month \n");
 					repeatFlag = 0;
 				}
-				System.out.println("Enter birth day in numbers (ex. 15): ");
+			} while(repeatFlag == 0);
+
+			System.out.print("Enter departure day in numbers (ex. 15): ");
+			do {
+				repeatFlag = 1;
 				inputDay = Integer.parseInt(in.readLine());
-				if (inputDay < 1 | inputDay > 31) {
-					System.out.println("Please enter a valid day ");
+				if (inputDay < 1 || inputDay > 31) {
+					System.out.print("Please enter a valid day \n");
 					repeatFlag = 0;
 				}
-				System.out.println("Enter birth year greater than 1900: ");
+			}while (repeatFlag == 0);
+			System.out.print("Enter departure year greater than 1900: ");
+			do {
+				repeatFlag = 1;
 				inputYear = Integer.parseInt(in.readLine());
 				if (inputYear < 1900) {
-					System.out.println("Please enter a valid year ");
+					System.out.print("Please enter a valid year \n");
 					repeatFlag = 0;
 				}
 			} while(repeatFlag == 0);
 			input = inputMonth + "/" + inputDay + "/" + inputYear;
-			query += input + ", ";
+			query += input + "','";
 
 			//Insert Country
 			System.out.println("Enter Country: ");
@@ -432,9 +439,9 @@ public class AirBooking{
 			} while(repeatFlag == 0);
 			query += input;
 
-			query += ")";
-			System.out.println(query);
-			// esql.executeQuery(query);
+			query += "');";
+			System.out.println("You have successfully been added " + name + "! Welcome!");
+			esql.executeUpdate(query);
 		}catch(Exception e){
 			 System.err.println (e.getMessage());
 		}
@@ -526,7 +533,7 @@ public class AirBooking{
 				query = "SELECT pID FROM Passenger WHERE passNum = '";
 				System.out.println("Please enter your Passport Number");
 				input = in.readLine();
-				query += input + "';";
+				query += input.toUpperCase() + "';";
 				passNum = esql.executeQueryAndReturnResult(query);
 				if (passNum.isEmpty()) {
 					System.out.println("There is no matching Passport Number.");
@@ -539,24 +546,31 @@ public class AirBooking{
 			Integer inputMonth = 0;
 			Integer inputDay = 0;
 			Integer inputYear = 0;
+			System.out.print("Enter departure month in numbers (ex. 1 is January): ");
 			do { //performs check to make sure user entered something
 				repeatFlag = 1;
-				System.out.print("Enter departure month in numbers (ex. 1 is January): ");
 				inputMonth = Integer.parseInt(in.readLine());
 				if (inputMonth < 1 || inputMonth > 12) {
-					System.out.print("Please enter a valid month ");
+					System.out.print("Please enter a valid month \n");
 					repeatFlag = 0;
 				}
-				System.out.print("Enter departure day in numbers (ex. 15): ");
+			} while(repeatFlag == 0);
+
+			System.out.print("Enter departure day in numbers (ex. 15): ");
+			do {
+				repeatFlag = 1;
 				inputDay = Integer.parseInt(in.readLine());
 				if (inputDay < 1 || inputDay > 31) {
-					System.out.print("Please enter a valid day ");
+					System.out.print("Please enter a valid day \n");
 					repeatFlag = 0;
 				}
-				System.out.print("Enter departure year greater than 1900: ");
+			}while (repeatFlag == 0);
+			System.out.print("Enter departure year greater than 1900: ");
+			do {
+				repeatFlag = 1;
 				inputYear = Integer.parseInt(in.readLine());
 				if (inputYear < 1900) {
-					System.out.print("Please enter a valid year ");
+					System.out.print("Please enter a valid year \n");
 					repeatFlag = 0;
 				}
 			} while(repeatFlag == 0);
@@ -576,17 +590,17 @@ public class AirBooking{
 					repeatFlag = 0;
 				}
 			} while(repeatFlag == 0);
-			query += bookingID + ", ";
-			query += departureDate + ", ";
-			query += flightNum.get(0).get(0).replaceAll("\\s+","") + ", "; // accessing index in list of list
+			query += "'" + bookingID + "','";
+			query += departureDate + "','";
+			query += flightNum.get(0).get(0).replaceAll("\\s+","") + "',"; // accessing index in list of list
 			query += passNum.get(0).get(0) + ");";
-			System.out.println(query);
+		//	System.out.println(query);
 
 			System.out.println("You're all good to go! Your booking ID is: " + bookingID);
 			System.out.println("Your flight from " + originInput + " to " + destInput + " on " + departureDate + " has been booked.");
 
 			// all avaliable flights from origin to destination
-			// esql.executeQuery(query);
+			esql.executeUpdate(query);
 
 		}catch(Exception e){
 			 System.err.println (e.getMessage());
@@ -609,7 +623,7 @@ public class AirBooking{
 
 			String testquery = "SELECT MAX(rID) from Ratings";
 			maxID = esql.executeQueryAndReturnResult(testquery);
-			query += (Integer.parseInt(maxID.get(0).get(0)) + 1) + ", ";
+			query += (Integer.parseInt(maxID.get(0).get(0)) + 1) + ",";
 
 			String passportString = "";
 			System.out.println("Please enter your Passport Number: ");
@@ -618,14 +632,14 @@ public class AirBooking{
 				repeatFlag = 1;
 				passportString = "SELECT pID FROM Passenger WHERE passNum = '";
 				input = in.readLine();
-				passportString += input + "';";
+				passportString += input.toUpperCase() + "';";
 				passNum = esql.executeQueryAndReturnResult(passportString);
 				if (passNum.isEmpty()) {
 					System.out.println("There is no matching Passport Number.");
 					repeatFlag = 0;
 				}
 			} while (repeatFlag == 0);
-			query += input + ", ";
+			query += passNum.get(0).get(0) + ",'";
 
 			//Insert Flight Number
 			//Either ask for flight number or ask for origin destination
@@ -684,7 +698,7 @@ public class AirBooking{
 					repeatFlag = 0;
 				}
 			} while (repeatFlag == 0);
-			query += input + ", ";
+			query += input + "',";
 
 
 			System.out.println("What would you rate this flight? (1 - 5 with a 1 being the lowest): ");
@@ -700,8 +714,10 @@ public class AirBooking{
 					repeatFlag = 0;
 				}
 			} while(repeatFlag == 0);
+			String ReviewRating = input;
 			query += input;
 
+			String Comments = "";
 			System.out.println("Would you like to leave a comment? Y/N");
 			do {
 				input = in.readLine();
@@ -714,7 +730,8 @@ public class AirBooking{
 							System.out.println("Your comment is too long. Please write under 240 characters");
 						}
 					} while (repeatFlag == 0);
-					query += ", " + input + ")";
+					Comments = input;
+					query += ",'" + input + "')";
 				}
 				else if (input.equals("N")) { // end query
 					query += ")";
@@ -726,8 +743,10 @@ public class AirBooking{
 				}
 			} while (repeatFlag == 0);
 
-			System.out.println(query);
-			// esql.executeQuery(query);
+			System.out.println("Thanks for your comments!");
+			System.out.println("You have given this flight a " + ReviewRating + " rating.");
+			System.out.println("You said this about this flight (blank if no comment submitted): " + Comments);
+			esql.executeUpdate(query);
 
 		}catch(Exception e){
 			 System.err.println (e.getMessage());
@@ -788,7 +807,7 @@ public class AirBooking{
 									repeatFlag = 0;
 								}
 							} while (repeatFlag == 0);
-							typeHandler = "airID = " + input;
+							typeHandler = "airID = '" + input + "'";
 						}
 						else if (input.equals("flightNum")) { // unique
 							do {
@@ -805,7 +824,7 @@ public class AirBooking{
 									repeatFlag = 0;
 								}
 							} while (repeatFlag == 0);
-							typeHandler = "flightNum = " + input;
+							typeHandler = "flightNum = '" + input + "'";
 						}
 						else if (input.equals("origin")) {
 							do { //performs check to make sure user entered something
@@ -821,7 +840,7 @@ public class AirBooking{
 									repeatFlag = 0;
 								}
 							} while(repeatFlag == 0);
-							typeHandler = "origin = " + input;
+							typeHandler = "origin = '" + input + "'";
 						}
 						else if (input.equals("destination")) {
 							do { //performs check to make sure user entered something
@@ -837,7 +856,7 @@ public class AirBooking{
 									repeatFlag = 0;
 								}
 							} while(repeatFlag == 0);
-							typeHandler = "destination = " + input;
+							typeHandler = "destination = '" + input + "'";
 						}
 						else if (input.equals("plane")) {
 							do {
@@ -848,7 +867,7 @@ public class AirBooking{
 									repeatFlag = 0;
 								}
 							} while (repeatFlag == 0);
-							typeHandler = "plane = " + input;
+							typeHandler = "plane = '" + input + "'";
 						}
 						else if (input.equals("seats")) {
 							do {
@@ -884,13 +903,14 @@ public class AirBooking{
 							repeatFlag = 0;
 							System.out.println("You didn't enter a correct option. Try again.");
 						}
-						query += typeHandler + " WHERE flightNum = " + input2 + ";";
+						query += typeHandler + " WHERE flightNum = '" + input2 + "';";
 					} while (repeatFlag == 0);
+					System.out.println("You have successfully updated this flight");
 					break;
 				}
 
 				else if (input.equals("Insert") || input.equals("insert")) {
-					query = "INSERT INTO Flights VALUES(";
+					query = "INSERT INTO Flight VALUES(";
 
 					System.out.println("Please enter the AirID"); // Has to be less than 53
 					do {
@@ -905,7 +925,7 @@ public class AirBooking{
 							repeatFlag = 0;
 						}
 					} while (repeatFlag == 0);
-					query += input + ", ";
+					query += input + ",'";
 
 					System.out.println("Please enter the flightNum"); // unique
 					do {
@@ -922,7 +942,7 @@ public class AirBooking{
 							repeatFlag = 0;
 						}
 					} while (repeatFlag == 0);
-					query += input + ", ";
+					query += input + "','";
 
 					System.out.println("Please enter the origin of the flight");
 					do { //performs check to make sure user entered something
@@ -938,7 +958,7 @@ public class AirBooking{
 							repeatFlag = 0;
 						}
 					} while(repeatFlag == 0);
-					query += input + ", ";
+					query += input + "','";
 
 					System.out.println("Please enter the destination of the flight");
 					do { //performs check to make sure user entered something
@@ -954,7 +974,7 @@ public class AirBooking{
 							repeatFlag = 0;
 						}
 					} while(repeatFlag == 0);
-					query += input + ", ";
+					query += input + "','";
 
 					System.out.println("Please enter the type of plane"); // Not sure how to set up checks
 					do {
@@ -965,7 +985,7 @@ public class AirBooking{
 							repeatFlag = 0;
 						}
 					} while (repeatFlag == 0);
-					query += input + ", ";
+					query += input + "',";
 
 					System.out.println("Please enter the number of seats");
 					do {
@@ -980,7 +1000,7 @@ public class AirBooking{
 							repeatFlag = 0;
 						}
 					} while (repeatFlag == 0);
-					query += input + ", ";
+					query += input + ",";
 
 					System.out.println("Please enter the duration");
 					do {
@@ -996,12 +1016,13 @@ public class AirBooking{
 						}
 					} while (repeatFlag == 0);
 					query += input + ");";
+					System.out.println("You have successfully inserted this flight");
 					break;
 				}
 			} while(repeatFlag == 0);
 
-			System.out.println(query);
-			// esql.executeQuery(query);
+
+			esql.executeUpdate(query);
 		}catch(Exception e){
 			 System.err.println (e.getMessage());
 		}
@@ -1010,42 +1031,64 @@ public class AirBooking{
 	public static void ListAvailableFlightsBetweenOriginAndDestination(AirBooking esql) throws Exception{//5
 		//List all flights between origin and distination (i.e. flightNum,origin,destination,plane,duration)
 		String input = "";
-		String query = "SELECT * FROM Flight WHERE origin = '";
+
 		Integer repeatFlag = 1;
+		Integer restartFlag = 1;
+		do {
+			String query = "SELECT * FROM Flight WHERE origin = '";
+			restartFlag = 1;
+			System.out.print("Enter the origin for all flights you want to see: ");
+			do { //performs check to make sure user entered something
+				input = in.readLine();
+				repeatFlag = 1;
+				if (input == null || input.isEmpty()) {
+					System.out.println("Please enter a origin location\n");
+					repeatFlag = 0;
+				}
+				boolean allLetters = input.chars().allMatch(Character::isLetter);
+				if (allLetters == false) {
+					System.out.println("Please enter only characters\n");
+					repeatFlag = 0;
+				}
+			} while(repeatFlag == 0);
+			String origin = input;
+			query += input + "' AND destination = '";
 
-		System.out.print("Enter the origin for all flights you want to see: ");
-		do { //performs check to make sure user entered something
-			input = in.readLine();
-			repeatFlag = 1;
-			if (input == null || input.isEmpty()) {
-				System.out.println("Please enter a origin location\n");
-				repeatFlag = 0;
-			}
-			boolean allLetters = input.chars().allMatch(Character::isLetter);
-			if (allLetters == false) {
-				System.out.println("Please enter only characters\n");
-				repeatFlag = 0;
-			}
-		} while(repeatFlag == 0);
-		query += input + "' AND destination = '";
+			System.out.print("Enter the destination for all flights you want to see: ");
+			do { //performs check to make sure user entered something
+				input = in.readLine();
+				repeatFlag = 1;
+				if (input == null || input.isEmpty()) {
+					System.out.println("Please enter a destination location\n");
+					repeatFlag = 0;
+				}
+				boolean allLetters = input.chars().allMatch(Character::isLetter);
+				if (allLetters == false) {
+					System.out.println("Please enter only characters\n");
+					repeatFlag = 0;
+				}
+			} while(repeatFlag == 0);
+			String dest = input;
+			query += input + "';";
 
-		System.out.print("Enter the destination for all flights you want to see: ");
-		do { //performs check to make sure user entered something
-			input = in.readLine();
-			repeatFlag = 1;
-			if (input == null || input.isEmpty()) {
-				System.out.println("Please enter a destination location\n");
-				repeatFlag = 0;
+			Integer stringChecker = esql.executeQueryAndPrintResult(query);
+			if (stringChecker == 0) {
+				System.out.println("Sorry there were no flights from " + origin + " to " + dest);
+				System.out.println("Would you like to try again? (Y/N)");
+				input = in.readLine();
+				if (input.equals("Y")) {
+					restartFlag = 0;
+				}
+				else if (input.equals("N")) {
+					System.out.println("Okay! Goodbye!");
+					break;
+				}
+				else {
+					System.out.println("I'm going to assume you want to quit. Bye!");
+					break;
+				}
 			}
-			boolean allLetters = input.chars().allMatch(Character::isLetter);
-			if (allLetters == false) {
-				System.out.println("Please enter only characters\n");
-				repeatFlag = 0;
-			}
-		} while(repeatFlag == 0);
-		query += input + "';";
-
-		esql.executeQueryAndPrintResult(query);
+		} while (restartFlag == 0);
 	}
 
 	public static void ListMostPopularDestinations(AirBooking esql){//6
@@ -1092,7 +1135,7 @@ public class AirBooking{
 			popularDestinations = esql.executeQueryAndReturnResult(query);
 			for (int i = 0; i < popularDestinations.size(); i++) {
 			System.out.println("Ranking: " + (i + 1));
-			System.out.println("Destination: " + popularDestinations.get(i).get(0).replaceAll("\\s+",""));
+			System.out.println("Destination: " + popularDestinations.get(i).get(0));
 			System.out.println("Number of flights: " + popularDestinations.get(i).get(1));
 			System.out.println("---------");
 			}
